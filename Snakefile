@@ -21,6 +21,8 @@ def get_all_samples(wildcards):
 rule target:
 	input:
 		expand("results/fastqc/{sample}_fastqc.zip", 
+				sample=config["samples"]),
+		expand("results/fq_trim/{sample}_trim.fq.gz", 
 				sample=config["samples"])
     
 rule fastqc:
@@ -33,3 +35,22 @@ rule fastqc:
 	conda: "envs/fastqc.yaml"	
 	shell:
 		"fastqc --outdir results/fastqc --format fastq --threads {threads} {input}"
+
+rule multiqc:
+	input:
+		[f"results/fastqc/{sample}_fastqc.zip" for sample in config["samples"]]
+	output:
+		"results/multiqc.html"
+	conda: "envs/multiqc.yaml"
+	shell:
+		"multiqc results/fastqc"
+
+rule trim:
+	input:
+		qc = "results/fastqc/{sample}_fastqc.html",
+		fq = get_samples
+	output:
+		"results/fq_trim/{sample}_trim.fq.gz"
+	conda: "envs/bbmap.yaml"
+	shell:
+		"echo "bbduk.sh in={input} out={output} " > {output} "

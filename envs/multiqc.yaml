@@ -1,0 +1,5 @@
+annels:
+    - conda-forge
+    - bioconda
+dependencies:
+    - multiqc=1.9
