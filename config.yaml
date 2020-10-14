@@ -1,0 +1,12 @@
+fq_path: "/workdir/jcf236/3prime-tag-seq/fq"
+
+samples:
+        SRR12365592: /workdir/jcf236/3prime-tag-seq/fq/SRR12365592.fastq.gz
+        SRR12365593: /workdir/jcf236/3prime-tag-seq/fq/SRR12365593.fastq.gz
+        SRR12365594: /workdir/jcf236/3prime-tag-seq/fq/SRR12365594.fastq.gz
+        SRR12365595: /workdir/jcf236/3prime-tag-seq/fq/SRR12365595.fastq.gz
+        SRR12365596: /workdir/jcf236/3prime-tag-seq/fq/SRR12365596.fastq.gz
+        SRR12365597: /workdir/jcf236/3prime-tag-seq/fq/SRR12365597.fastq.gz
+        SRR12365598: /workdir/jcf236/3prime-tag-seq/fq/SRR12365598.fastq.gz
+        SRR12365599: /workdir/jcf236/3prime-tag-seq/fq/SRR12365599.fastq.gz
+        SRR12365600: /workdir/jcf236/3prime-tag-seq/fq/SRR12365600.fastq.gz
