@@ -10,3 +10,7 @@ samples:
         SRR12365598: /workdir/jcf236/3prime-tag-seq/fq/SRR12365598.fastq.gz
         SRR12365599: /workdir/jcf236/3prime-tag-seq/fq/SRR12365599.fastq.gz
         SRR12365600: /workdir/jcf236/3prime-tag-seq/fq/SRR12365600.fastq.gz
+
+adaptor_path: "/workdir/jcf236/3prime-tag-seq/resources/truseq_rna.fa.gz"
+
+genome: "/workdir/jcf236/3prime-tag-seq/Dmel_genome/dmel-all-chromosome-r6.36.fasta.gz" 

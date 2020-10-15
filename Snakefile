@@ -36,21 +36,39 @@ rule fastqc:
 	shell:
 		"fastqc --outdir results/fastqc --format fastq --threads {threads} {input}"
 
-rule multiqc:
-	input:
-		[f"results/fastqc/{sample}_fastqc.zip" for sample in config["samples"]]
+#rule multiqc:
+#	input:
+#		[f"results/fastqc/{sample}_fastqc.zip" for sample in config["samples"]]
+#	output:
+#		"results/multiqc.html"
+#	conda: "envs/multiqc.yaml"
+#	shell:
+#		"multiqc results/fastqc"
+
+rule create_polyA:
+	"""Need polyA fasta for trimming. """
 	output:
-		"results/multiqc.html"
-	conda: "envs/multiqc.yaml"
+		"resources/polyA.fa.gz"
+	threads: 1
 	shell:
-		"multiqc results/fastqc"
+		"""
+		printf ">poly_a\nAAAAAAAAAAAAAAAAAA" | gzip > {output}
+		"""
 
 rule trim:
 	input:
 		qc = "results/fastqc/{sample}_fastqc.html",
-		fq = get_samples
+		fq = get_samples,
+		polyA = "resources/polyA.fa.gz"
 	output:
 		"results/fq_trim/{sample}_trim.fq.gz"
+	params:	
+		adapters = config["adaptor_path"]
+	threads: 4
 	conda: "envs/bbmap.yaml"
 	shell:
-		"echo "bbduk.sh in={input} out={output} " > {output} "
+		"""
+		bbduk.sh in={input.fq} out={output} ref={input.polyA},{params.adapters} \
+		k=13 ktrim=r useshortkmers=t mink=5 qtrim=r trimq=10 minlength=20 t={threads}
+		"""
+
