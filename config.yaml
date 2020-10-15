@@ -13,4 +13,8 @@ samples:
 
 adaptor_path: "/workdir/jcf236/3prime-tag-seq/resources/truseq_rna.fa.gz"
 
-genome: "/workdir/jcf236/3prime-tag-seq/Dmel_genome/dmel-all-chromosome-r6.36.fasta.gz" 
+# Genome and gtf file for STAR should not be gz
+
+genome: "/workdir/jcf236/3prime-tag-seq/Dmel_genome/dmel-all-chromosome-r6.36.fasta"
+
+gtf: "/workdir/jcf236/3prime-tag-seq/Dmel_genome/dmel-all-r6.36.gtf"

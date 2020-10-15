@@ -22,7 +22,7 @@ rule target:
 	input:
 		expand("results/fastqc/{sample}_fastqc.zip", 
 				sample=config["samples"]),
-		expand("results/fq_trim/{sample}_trim.fq.gz", 
+		expand("results/bam/{sample}/Aligned.out.bam", 
 				sample=config["samples"])
     
 rule fastqc:
@@ -46,7 +46,7 @@ rule fastqc:
 #		"multiqc results/fastqc"
 
 rule create_polyA:
-	"""Need polyA fasta for trimming. """
+	"""Need polyA fasta for trimming. PolyA  """
 	output:
 		"resources/polyA.fa.gz"
 	threads: 1
@@ -56,6 +56,8 @@ rule create_polyA:
 		"""
 
 rule trim:
+	""" Read orientation: Seq primer1, Read, (may read into poly-A tail if insert is short), Seq primer2 (not used) """
+	""" sequencing primer, index """
 	input:
 		qc = "results/fastqc/{sample}_fastqc.html",
 		fq = get_samples,
@@ -72,3 +74,33 @@ rule trim:
 		k=13 ktrim=r useshortkmers=t mink=5 qtrim=r trimq=10 minlength=20 t={threads}
 		"""
 
+rule STAR_index:
+	input:
+		fa = config["genome"],
+		gtf = config["gtf"]
+	output:
+		directory('Dmel_STAR')
+	threads: 8
+	conda: "envs/STAR.yaml"
+	shell:
+		"""
+		mkdir {output} && 
+		STAR --runThreadN {threads} \
+		--runMode genomeGenerate -genomeDir {output} --genomeFastaFiles {input.fa} --sjdbGTFfile {input.gtf} \
+		--sjdbOverhang 100
+		"""
+
+rule map:
+	input:
+		fq = "results/fq_trim/{sample}_trim.fq.gz",
+		index = "Dmel_STAR"
+	output:
+		"results/bam/{sample}/Aligned.out.bam"
+	params:
+		genome = config["genome"]
+	conda: "envs/STAR.yaml"
+	threads: 8
+	shell:
+		"""
+		touch {output}
+		"""
