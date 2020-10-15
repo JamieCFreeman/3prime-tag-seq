@@ -10,3 +10,6 @@ along with some QC steps, which consists of:
 3. Mapping with STAR.
 4. Assessing bam files with Qualimap and tying all QC together with MultiQC to output a html report. 
 
+
+![DAG](https://github.com/JamieCFreeman/3prime-tag-seq/blob/main/3prime-tag-seg.svg)
+
