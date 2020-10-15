@@ -13,7 +13,9 @@ samples:
 
 adaptor_path: "/workdir/jcf236/3prime-tag-seq/resources/truseq_rna.fa.gz"
 
-# Genome and gtf file for STAR should not be gz
+read_length: 75
+
+# Genome and gtf file for STAR should not be gz. STAR also requires a GTF, not GFF file.
 
 genome: "/workdir/jcf236/3prime-tag-seq/Dmel_genome/dmel-all-chromosome-r6.36.fasta"
 

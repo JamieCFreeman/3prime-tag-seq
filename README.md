@@ -10,6 +10,7 @@ along with some QC steps, which consists of:
 3. Mapping with STAR.
 4. Assessing bam files with Qualimap and tying all QC together with MultiQC to output a html report. 
 
+Conda is used to manage environments on a per rule basis, so be sure to deploy Snakemake with the --use-conda flag. 
 
 ![DAG](https://github.com/JamieCFreeman/3prime-tag-seq/blob/main/README_files/3prime-tag-seg.svg?raw=true)
 

@@ -22,7 +22,7 @@ rule target:
 	input:
 		expand("results/fastqc/{sample}_fastqc.zip", 
 				sample=config["samples"]),
-		expand("results/bam/{sample}/Aligned.out.bam", 
+		expand("results/STAR/{sample}_Log.final.out", 
 				sample=config["samples"])
     
 rule fastqc:
@@ -55,7 +55,7 @@ rule create_polyA:
 		printf ">poly_a\nAAAAAAAAAAAAAAAAAA" | gzip > {output}
 		"""
 
-rule trim:
+rule bbduk_trim:
 	""" Read orientation: Seq primer1, Read, (may read into poly-A tail if insert is short), Seq primer2 (not used) """
 	""" sequencing primer, index """
 	input:
@@ -67,40 +67,54 @@ rule trim:
 	params:	
 		adapters = config["adaptor_path"]
 	threads: 4
+	log: "logs/bbduk/{sample}.log"
 	conda: "envs/bbmap.yaml"
 	shell:
 		"""
 		bbduk.sh in={input.fq} out={output} ref={input.polyA},{params.adapters} \
-		k=13 ktrim=r useshortkmers=t mink=5 qtrim=r trimq=10 minlength=20 t={threads}
+		k=13 ktrim=r useshortkmers=t mink=5 qtrim=r trimq=10 minlength=20 t={threads} 2> {log}
 		"""
 
 rule STAR_index:
+	""" Create STAR genome index, also create a dummy file for input to next rule."""
+	""" Marked dummy file as temp, so it will be deleted on finsihing pipeline run."""
 	input:
 		fa = config["genome"],
 		gtf = config["gtf"]
 	output:
-		directory('Dmel_STAR')
+		output = temp("STAR.ok")
+	params: 
+		overhang = config["read_length"] - 1
 	threads: 8
 	conda: "envs/STAR.yaml"
+	log: "logs/STAR/genome_index.log"
 	shell:
 		"""
-		mkdir {output} && 
 		STAR --runThreadN {threads} \
-		--runMode genomeGenerate -genomeDir {output} --genomeFastaFiles {input.fa} --sjdbGTFfile {input.gtf} \
-		--sjdbOverhang 100
+		--runMode genomeGenerate -genomeDir STAR_index --genomeFastaFiles {input.fa} --sjdbGTFfile {input.gtf} \
+		--sjdbOverhang {params.overhang} 2> {log}
+		touch {output}	
 		"""
 
-rule map:
+rule STAR_map:
 	input:
 		fq = "results/fq_trim/{sample}_trim.fq.gz",
-		index = "Dmel_STAR"
+		dummy = "STAR.ok"	
 	output:
-		"results/bam/{sample}/Aligned.out.bam"
+		"results/STAR/{sample}_Log.final.out"
 	params:
 		genome = config["genome"]
 	conda: "envs/STAR.yaml"
+	log: "logs/STAR/{sample}.log"
 	threads: 8
 	shell:
 		"""
-		touch {output}
+		STAR --runThreadN {threads} --genomeDir GenomeDir --readFilesIn {input.fq} --readFilesCommand zcat \
+		--outFilterType BySJout --outFilterMultimapNmax 20 --alignSJoverhangMin 8 --alignSJDBoverhangMin 1 \
+		--outFilterMismatchNmax 999 --outFilterMismatchNoverLmax 0.1 --alignIntronMin 20 \
+		--alignIntronMax 1000000 --alignMatesGapMax 1000000 --outSAMattributes NH HI NM MD \
+		--outSAMtype BAM SortedByCoordinate --outFileNamePrefix results/STAR/{wildcards.sample}_ \
+		2> {log}
 		"""
+
+
