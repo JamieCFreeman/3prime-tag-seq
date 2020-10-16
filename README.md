@@ -1,7 +1,7 @@
 # 3prime-tag-seq
 
 
-Process reads from Lexogen QuantSeq libraries, which use a 3' tag approach for RNAseq.
+Process reads from Lexogen QuantSeq FWD libraries, which use a 3' tag approach for RNAseq. This library prep results in reads that  are strand-specific on the forward strand. When sequenced single-end, the read starts with sequencing primer 1 and reads into the insert. Sequencing primer 2 is after the polyA tail. If insert size is small, the read one may read into the polyA tail. 
 
 Currently following approach outlined on Lexogen's website: https://www.lexogen.com/quantseq-data-analysis/
 along with some QC steps, which consists of:

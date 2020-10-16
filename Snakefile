@@ -93,7 +93,8 @@ rule STAR_map:
 		fq = "results/fq_trim/{sample}_trim.fq.gz",
 		dummy = "STAR.ok"	
 	output:
-		"results/STAR/{sample}_Log.final.out"
+		"results/STAR/{sample}_Log.final.out",
+		"results/STAR/{sample}_Aligned.sortedByCoord.out.bam"
 	params:
 		genome = config["genome"]
 	conda: "envs/STAR.yaml"
@@ -135,7 +136,7 @@ rule qualimap:
 		unset display
 		qualimap rnaseq -outdir results/qualimap/{wildcards.sample} \
 		-a proportional -bam {input} \
-		-p strand-specific-forward -gtf {params.gtf} \
+		-p strand-specific-reverse -gtf {params.gtf} \
 		--java-mem-size=8G
 		"""	
 
