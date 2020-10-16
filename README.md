@@ -12,5 +12,5 @@ along with some QC steps, which consists of:
 
 Conda is used to manage environments on a per rule basis, so be sure to deploy Snakemake with the --use-conda flag. 
 
-![DAG](https://github.com/JamieCFreeman/3prime-tag-seq/blob/main/README_files/3prime-tag-seg.svg?raw=true)
+![DAG](https://github.com/JamieCFreeman/3prime-tag-seq/blob/main/README_files/rulegraph.svg?raw=true)
 
