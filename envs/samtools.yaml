@@ -1,0 +1,5 @@
+annels:
+    - conda-forge
+    - bioconda
+dependencies:
+    - samtools=1.11-0

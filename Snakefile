@@ -20,10 +20,11 @@ def get_all_samples(wildcards):
     
 rule target:
 	input:
-		expand("results/fastqc/{sample}_fastqc.zip", 
+		expand("results/qualimap/{sample}/qualimapReport.html", 
 				sample=config["samples"]),
 		expand("results/STAR/{sample}_Aligned.sortedByCoord.out.bam.bai",
-				sample=config["samples"])
+				sample=config["samples"]),
+		 "results/multiqc/multiqc_report.html"
     
 rule fastqc:
 	input:
@@ -35,15 +36,6 @@ rule fastqc:
 	conda: "envs/fastqc.yaml"	
 	shell:
 		"fastqc --outdir results/fastqc --format fastq --threads {threads} {input}"
-
-#rule multiqc:
-#	input:
-#		[f"results/fastqc/{sample}_fastqc.zip" for sample in config["samples"]]
-#	output:
-#		"results/multiqc.html"
-#	conda: "envs/multiqc.yaml"
-#	shell:
-#		"multiqc results/fastqc"
 
 rule create_polyA:
 	"""Need polyA fasta for trimming. PolyA  """
@@ -92,7 +84,7 @@ rule STAR_index:
 		"""
 		STAR --runThreadN {threads} \
 		--runMode genomeGenerate -genomeDir STAR_index --genomeFastaFiles {input.fa} --sjdbGTFfile {input.gtf} \
-		--sjdbOverhang {params.overhang} 2> {log}
+		--sjdbOverhang {params.overhang} 2> {log} &&
 		touch {output}	
 		"""
 
@@ -127,4 +119,32 @@ rule bam_index:
 	shell:
 		"samtools index {input} -@ {threads}"
 
+rule qualimap:
+	""" Params following: """
+	""" https://hbctraining.github.io/Intro-to-rnaseq-hpc-salmon/lessons/03_QC_STAR_and_Qualimap_run.html#qualimap"""
+	input:
+		"results/STAR/{sample}_Aligned.sortedByCoord.out.bam"
+	output:
+		"results/qualimap/{sample}/qualimapReport.html"
+	params:
+		gtf = config["gtf"]
+	threads: 4
+	conda: "envs/qualimap.yaml"
+	shell:
+		"""
+		unset display
+		qualimap rnaseq -outdir results/qualimap/{wildcards.sample} \
+		-a proportional -bam {input} \
+		-p strand-specific-forward -gtf {params.gtf} \
+		--java-mem-size=8G
+		"""	
+
+rule multiqc:
+	input:
+               [f"results/qualimap/{sample}/qualimapReport.html" for sample in config["samples"]]
+	output:
+               "results/multiqc/multiqc_report.html"
+	conda: "envs/multiqc.yaml"
+	shell:
+               "multiqc results/qualimap results/fastqc results/STAR --outdir results/multiqc"
 
