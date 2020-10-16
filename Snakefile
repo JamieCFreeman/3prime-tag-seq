@@ -22,7 +22,7 @@ rule target:
 	input:
 		expand("results/fastqc/{sample}_fastqc.zip", 
 				sample=config["samples"]),
-		expand("results/STAR/{sample}_Log.final.out", 
+		expand("results/STAR/{sample}_Aligned.sortedByCoord.out.bam.bai",
 				sample=config["samples"])
     
 rule fastqc:
@@ -116,5 +116,15 @@ rule STAR_map:
 		--outSAMtype BAM SortedByCoordinate --outFileNamePrefix results/STAR/{wildcards.sample}_ \
 		2> {log}
 		"""
+
+rule bam_index:
+	input:
+		"results/STAR/{sample}_Aligned.sortedByCoord.out.bam"
+	output:
+		"results/STAR/{sample}_Aligned.sortedByCoord.out.bam.bai"
+	conda: "envs/samtools.yaml"
+	threads: 4
+	shell:
+		"samtools index {input} -@ {threads}"
 
 
