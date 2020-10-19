@@ -24,7 +24,8 @@ rule target:
 				sample=config["samples"]),
 		expand("results/STAR/{sample}_Aligned.sortedByCoord.out.bam.bai",
 				sample=config["samples"]),
-		 "results/multiqc/multiqc_report.html"
+                expand("results/multiqc/{pre}_multiqc_report.html",
+                        	pre=config["prefix"]) 
     
 rule fastqc:
 	input:
@@ -107,7 +108,7 @@ rule STAR_map:
 		--outFilterMismatchNmax 999 --outFilterMismatchNoverLmax 0.1 --alignIntronMin 20 \
 		--alignIntronMax 1000000 --alignMatesGapMax 1000000 --outSAMattributes NH HI NM MD \
 		--outSAMtype BAM SortedByCoordinate --outFileNamePrefix results/STAR/{wildcards.sample}_ \
-		2> {log}
+		--quantMode GeneCounts 2> {log}
 		"""
 
 rule bam_index:
@@ -136,7 +137,7 @@ rule qualimap:
 		unset display
 		qualimap rnaseq -outdir results/qualimap/{wildcards.sample} \
 		-a proportional -bam {input} \
-		-p strand-specific-reverse -gtf {params.gtf} \
+		-p strand-specific-forward -gtf {params.gtf} \
 		--java-mem-size=8G
 		"""	
 
@@ -144,8 +145,11 @@ rule multiqc:
 	input:
                [f"results/qualimap/{sample}/qualimapReport.html" for sample in config["samples"]]
 	output:
-               "results/multiqc/multiqc_report.html"
+               expand("results/multiqc/{pre}_multiqc_report.html", 
+			pre=config["prefix"])
+	params:
+		name = config["prefix"]
 	conda: "envs/multiqc.yaml"
 	shell:
-               "multiqc results/qualimap results/fastqc results/STAR --outdir results/multiqc"
+               "multiqc results/qualimap results/fastqc results/STAR --outdir results/multiqc --title {params.name}"
 

@@ -1,15 +1,31 @@
-fq_path: "/workdir/jcf236/3prime-tag-seq/fq"
+fq_path: "/workdir/jcf236/3prime-tag-sefq"
+
+prefix: "BSA_RNAseq_aabysIL"
 
 samples:
-        SRR12365592: /workdir/jcf236/3prime-tag-seq/fq/SRR12365592.fastq.gz
-        SRR12365593: /workdir/jcf236/3prime-tag-seq/fq/SRR12365593.fastq.gz
-        SRR12365594: /workdir/jcf236/3prime-tag-seq/fq/SRR12365594.fastq.gz
-        SRR12365595: /workdir/jcf236/3prime-tag-seq/fq/SRR12365595.fastq.gz
-        SRR12365596: /workdir/jcf236/3prime-tag-seq/fq/SRR12365596.fastq.gz
-        SRR12365597: /workdir/jcf236/3prime-tag-seq/fq/SRR12365597.fastq.gz
-        SRR12365598: /workdir/jcf236/3prime-tag-seq/fq/SRR12365598.fastq.gz
-        SRR12365599: /workdir/jcf236/3prime-tag-seq/fq/SRR12365599.fastq.gz
-        SRR12365600: /workdir/jcf236/3prime-tag-seq/fq/SRR12365600.fastq.gz
+        BSAS4-r1:       fq/BSAS4-r1.fastq.gz
+        BSAS4-r2:       fq/BSAS4-r2.fastq.gz
+        BSAS4-r3:       fq/BSAS4-r3.fastq.gz
+        BSAS4-r4:       fq/BSAS4-r4.fastq.gz
+        BSAS4-r5:       fq/BSAS4-r5.fastq.gz
+        IsoCS-r1:       fq/IsoCS-r1.fastq.gz
+        IsoCS-r2:       fq/IsoCS-r2.fastq.gz
+        IsoCS-r3:       fq/IsoCS-r3.fastq.gz
+        IsoCS-r4:       fq/IsoCS-r4.fastq.gz
+        IsoCS-r5:       fq/IsoCS-r5.fastq.gz
+        IsoCS-r6:       fq/IsoCS-r6.fastq.gz
+        KS17S3-r1:      fq/KS17S3-r1.fastq.gz
+        KS17S3-r2:      fq/KS17S3-r2.fastq.gz
+        KS17S3-r3:      fq/KS17S3-r3.fastq.gz
+        KS17S3-r4:      fq/KS17S3-r4.fastq.gz
+        KS17S3-r5:      fq/KS17S3-r5.fastq.gz
+        KS17S3-r6:      fq/KS17S3-r6.fastq.gz
+        aabys-r1:       fq/aabys-r1.fastq.gz
+        aabys-r2:       fq/aabys-r2.fastq.gz
+        aabys-r3:       fq/aabys-r3.fastq.gz
+        aabys-r4:       fq/aabys-r4.fastq.gz
+        aabys-r5:       fq/aabys-r5.fastq.gz
+        aabys-r6:       fq/aabys-r6.fastq.gz
 
 adaptor_path: "/workdir/jcf236/3prime-tag-seq/resources/truseq_rna.fa.gz"
 
@@ -17,6 +33,6 @@ read_length: 75
 
 # Genome and gtf file for STAR should not be gz. STAR also requires a GTF, not GFF file.
 
-genome: "/workdir/jcf236/3prime-tag-seq/Dmel_genome/dmel-all-chromosome-r6.36.fasta"
+genome: "/workdir/jcf236/aabys_genome/CHR_Un/mds_ref_Musca_domestica-2.0.2_chrUn_edit_names.fa"
 
-gtf: "/workdir/jcf236/3prime-tag-seq/Dmel_genome/dmel-all-r6.36.gtf"
+gtf: "/workdir/jcf236/aabys_genome/GFF/ref_Musca_domestica-2.0.2_top_level.gtf"
