@@ -12,6 +12,8 @@ min_version("5.1.2")
 
 configfile: "config.yaml"
 
+OUTDIR = config["prefix"]
+
 def get_samples(wildcards):
     return config["samples"][wildcards.sample]
 
@@ -19,24 +21,29 @@ def get_all_samples(wildcards):
     return config["samples"].values()
     
 rule target:
+	""" Remember when using f string- wildcards must be double-bracketed!"""
 	input:
-		expand("results/qualimap/{sample}/qualimapReport.html", 
+		expand(f"{OUTDIR}/results/qualimap/{{sample}}/qualimapReport.html", 
 				sample=config["samples"]),
-		expand("results/STAR/{sample}_Aligned.sortedByCoord.out.bam.bai",
+		expand(f"{OUTDIR}/results/STAR/{{sample}}_Aligned.sortedByCoord.out.bam.bai",
 				sample=config["samples"]),
-                expand("results/multiqc/{pre}_multiqc_report.html",
-                        	pre=config["prefix"]) 
+                expand(f"{OUTDIR}/results/multiqc/{{pre}}_multiqc_report.html",
+                        	pre=config["prefix"])
+#		f"{OUTDIR}/results/counts/all.tsv" 
     
 rule fastqc:
 	input:
 		get_samples
 	output:
-		"results/fastqc/{sample}_fastqc.html",
-		"results/fastqc/{sample}_fastqc.zip"
+		f"{OUTDIR}/results/fastqc/{{sample}}_fastqc.html",
+		f"{OUTDIR}/results/fastqc/{{sample}}_fastqc.zip"
 	threads: 4
+	params: 
+		outdir = f"{OUTDIR}/results/fastqc"
+	log: f"{OUTDIR}/logs/fastqc/{{sample}}.log"
 	conda: "envs/fastqc.yaml"	
 	shell:
-		"fastqc --outdir results/fastqc --format fastq --threads {threads} {input}"
+		"fastqc --outdir {params.outdir} --format fastq --threads {threads} {input}"
 
 rule create_polyA:
 	"""Need polyA fasta for trimming. PolyA  """
@@ -52,15 +59,15 @@ rule bbduk_trim:
 	""" Read orientation: Seq primer1, Read, (may read into poly-A tail if insert is short), Seq primer2 (not used) """
 	""" sequencing primer, index """
 	input:
-		qc = "results/fastqc/{sample}_fastqc.html",
+		qc = f"{OUTDIR}/results/fastqc/{{sample}}_fastqc.html",
 		fq = get_samples,
 		polyA = "resources/polyA.fa.gz"
 	output:
-		"results/fq_trim/{sample}_trim.fq.gz"
+		f"{OUTDIR}/results/fq_trim/{{sample}}_trim.fq.gz"
 	params:	
 		adapters = config["adaptor_path"]
 	threads: 4
-	log: "logs/bbduk/{sample}.log"
+	log: f"{OUTDIR}/logs/bbduk/{{sample}}.log"
 	conda: "envs/bbmap.yaml"
 	shell:
 		"""
@@ -91,15 +98,16 @@ rule STAR_index:
 
 rule STAR_map:
 	input:
-		fq = "results/fq_trim/{sample}_trim.fq.gz",
+		fq = f"{OUTDIR}/results/fq_trim/{{sample}}_trim.fq.gz",
 		dummy = "STAR.ok"	
 	output:
-		"results/STAR/{sample}_Log.final.out",
-		"results/STAR/{sample}_Aligned.sortedByCoord.out.bam"
+		f"{OUTDIR}/results/STAR/{{sample}}_Log.final.out",
+		f"{OUTDIR}/results/STAR/{{sample}}_Aligned.sortedByCoord.out.bam"
 	params:
-		genome = config["genome"]
+		genome = config["genome"],
+		out = f"{OUTDIR}/results/STAR/{{sample}}_"
 	conda: "envs/STAR.yaml"
-	log: "logs/STAR/{sample}.log"
+	log: f"{OUTDIR}/logs/STAR/{{sample}}.log"
 	threads: 8
 	shell:
 		"""
@@ -107,15 +115,15 @@ rule STAR_map:
 		--outFilterType BySJout --outFilterMultimapNmax 20 --alignSJoverhangMin 8 --alignSJDBoverhangMin 1 \
 		--outFilterMismatchNmax 999 --outFilterMismatchNoverLmax 0.1 --alignIntronMin 20 \
 		--alignIntronMax 1000000 --alignMatesGapMax 1000000 --outSAMattributes NH HI NM MD \
-		--outSAMtype BAM SortedByCoordinate --outFileNamePrefix results/STAR/{wildcards.sample}_ \
+		--outSAMtype BAM SortedByCoordinate --outFileNamePrefix {params.out} \
 		--quantMode GeneCounts 2> {log}
 		"""
 
 rule bam_index:
 	input:
-		"results/STAR/{sample}_Aligned.sortedByCoord.out.bam"
+		f"{OUTDIR}/results/STAR/{{sample}}_Aligned.sortedByCoord.out.bam"
 	output:
-		"results/STAR/{sample}_Aligned.sortedByCoord.out.bam.bai"
+		f"{OUTDIR}/results/STAR/{{sample}}_Aligned.sortedByCoord.out.bam.bai"
 	conda: "envs/samtools.yaml"
 	threads: 4
 	shell:
@@ -125,17 +133,18 @@ rule qualimap:
 	""" Params following: """
 	""" https://hbctraining.github.io/Intro-to-rnaseq-hpc-salmon/lessons/03_QC_STAR_and_Qualimap_run.html#qualimap"""
 	input:
-		"results/STAR/{sample}_Aligned.sortedByCoord.out.bam"
+		f"{OUTDIR}/results/STAR/{{sample}}_Aligned.sortedByCoord.out.bam"
 	output:
-		"results/qualimap/{sample}/qualimapReport.html"
+		f"{OUTDIR}/results/qualimap/{{sample}}/qualimapReport.html"
 	params:
-		gtf = config["gtf"]
+		gtf = config["gtf"],
+		outdir =  f"{OUTDIR}/results/qualimap/{{sample}}"
 	threads: 4
 	conda: "envs/qualimap.yaml"
 	shell:
 		"""
 		unset display
-		qualimap rnaseq -outdir results/qualimap/{wildcards.sample} \
+		qualimap rnaseq -outdir {params.outdir} \
 		-a proportional -bam {input} \
 		-p strand-specific-forward -gtf {params.gtf} \
 		--java-mem-size=8G
@@ -143,13 +152,27 @@ rule qualimap:
 
 rule multiqc:
 	input:
-               [f"results/qualimap/{sample}/qualimapReport.html" for sample in config["samples"]]
+               [f"{OUTDIR}/results/qualimap/{sample}/qualimapReport.html" for sample in config["samples"]]
 	output:
-               expand("results/multiqc/{pre}_multiqc_report.html", 
+               expand(f"{OUTDIR}/results/multiqc/{{pre}}_multiqc_report.html", 
 			pre=config["prefix"])
 	params:
-		name = config["prefix"]
+		indir = f"{OUTDIR}/results",
+		name = config["prefix"],
+		outdir =  f"{OUTDIR}/results/multiqc"
 	conda: "envs/multiqc.yaml"
 	shell:
-               "multiqc results/qualimap results/fastqc results/STAR --outdir results/multiqc --title {params.name}"
+               "multiqc {params.indir} --outdir {params.outdir} --title {params.name}"
+
+#rule count_matrx:
+#	input:
+#		[f"{OUTDIR}/results/STAR/{sample}_ReadsPerGene.out.tab" for sample in config["samples"]] 
+#	output:
+#		f"{OUTDIR}/results/counts/all.tsv"
+#	params:
+#		samples=list(config["samples"])
+#	conda: "envs/pandas.yaml"
+#	script:
+#		"scripts/count-matrix.py"
+
 
