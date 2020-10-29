@@ -1,6 +1,6 @@
-fq_path: "/workdir/jcf236/3prime-tag-sefq"
 
-prefix: "BSA_RNAseq_aabysIL"
+# Prefix for out directory name
+prefix: "BSA_RNAseq_aabysIL_extend400"
 
 samples:
         BSAS4-r1:       fq/BSAS4-r1.fastq.gz
@@ -35,4 +35,4 @@ read_length: 75
 
 genome: "/workdir/jcf236/aabys_genome/CHR_Un/mds_ref_Musca_domestica-2.0.2_chrUn_edit_names.fa"
 
-gtf: "/workdir/jcf236/aabys_genome/GFF/ref_Musca_domestica-2.0.2_top_level.gtf"
+gtf: "/workdir/jcf236/aabys_genome/GFF/ref_Musca_domestica-2.0.2_top_level_extend400.gtf"
