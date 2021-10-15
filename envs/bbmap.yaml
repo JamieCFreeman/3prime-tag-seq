@@ -1,4 +1,4 @@
-annels:
+channels:
     - conda-forge
     - bioconda
 dependencies:
